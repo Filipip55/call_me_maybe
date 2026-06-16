@@ -1,4 +1,4 @@
-from llm_sdk.llm_sdk import Small_LLM_Model
+from llm_sdk import Small_LLM_Model
 
 # IMPORTANT RULES:
 # main model is qwen 3-0.6b
@@ -6,11 +6,13 @@ from llm_sdk.llm_sdk import Small_LLM_Model
 # numpy and json packages allowed
 # no private methods or attributes from llm_sdk
 # use uv for virtual env and dependency management
-# look up what tokens and logits are
+# look up what tokens and logits are DONE
 # USAGE:
 
-
-if __name__ == "__main__":
+def main() -> None:
 	llm = Small_LLM_Model()
 	input_ids = llm.encode("Ciao ti sto testando")
-	print(input_ids)
+	print(llm.decode(input_ids))
+
+if __name__ == "__main__":
+	main()
