@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by io.*
+*This project has been created as part of the 42 curriculum by <icoman>.*
 
 # call me maybe: Introduction to function calling in LLMs
 
