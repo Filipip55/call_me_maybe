@@ -1,18 +1,58 @@
-from llm_sdk import Small_LLM_Model
+import argparse
+import json
+import os
+from llm_sdk import Small_LLM_Model  # type: ignore
+from .schema import load_functions_definition, load_prompts, FunctionCallingResult
+from .constrained_decoder import Vocabulary
+from .generator import generate_constrained
 
-# IMPORTANT RULES:
-# main model is qwen 3-0.6b
-# classes use pydantic for validation
-# numpy and json packages allowed
-# no private methods or attributes from llm_sdk
-# use uv for virtual env and dependency management
-# look up what tokens and logits are DONE
-# USAGE:
 
 def main() -> None:
-	llm = Small_LLM_Model()
-	input_ids = llm.encode("Ciao ti sto testando")
-	print(llm.decode(input_ids))
+    parser = argparse.ArgumentParser(description="Function Calling via Constrained Decoding")
+    parser.add_argument("--functions_definition", type=str, default="data/input/functions_definition.json")
+    parser.add_argument("--input", type=str, default="data/input/function_calling_tests.json")
+    parser.add_argument("--output", type=str, default="data/output/function_calling_results.json")
+    args = parser.parse_args()
+
+    # Create output directory if it doesn't exist
+    os.makedirs(os.path.dirname(args.output), exist_ok=True)
+
+    print("Loading schemas and input data...")
+    functions = load_functions_definition(args.functions_definition)
+    prompts = load_prompts(args.input)
+
+    print("Initializing model and vocabulary...")
+    llm = Small_LLM_Model()
+    vocab = Vocabulary(llm)
+
+    results = []
+    print(f"Processing {len(prompts)} prompts...")
+    for i, test in enumerate(prompts):
+        print(f"[{i+1}/{len(prompts)}] Generating for prompt: {test.prompt}")
+        json_str = generate_constrained(llm, test.prompt, functions, vocab)
+
+        try:
+            parsed = json.loads(json_str)
+            res = FunctionCallingResult(
+                prompt=test.prompt,
+                name=parsed.get("name", ""),
+                parameters=parsed.get("parameters", {})
+            )
+            results.append(res.model_dump())
+        except Exception as e:
+            print(f"Error parsing generated JSON: {e}")
+            print(f"Generated text was: {json_str}")
+            # Fallback for gracefully handling errors
+            results.append({
+                "prompt": test.prompt,
+                "name": "error",
+                "parameters": {}
+            })
+
+    print(f"Writing results to {args.output}...")
+    with open(args.output, 'w', encoding='utf-8') as f:
+        json.dump(results, f, indent=2)
+
 
 if __name__ == "__main__":
-	main()
+    main()

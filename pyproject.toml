@@ -4,6 +4,8 @@ version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
     "llm-sdk",
+    "pydantic",
+    "numpy"
 ]
 
 [tool.uv.workspace]
@@ -13,3 +15,15 @@ members = [
 
 [tool.uv.sources]
 llm-sdk = { workspace = true }
+
+[tool.mypy]
+exclude = [
+    '^\\.venv/',
+    '^llm_sdk/',
+]
+
+[dependency-groups]
+dev = [
+    "flake8>=7.3.0",
+    "mypy>=2.1.0",
+]
