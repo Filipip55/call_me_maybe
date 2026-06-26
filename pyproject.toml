@@ -5,7 +5,8 @@ requires-python = ">=3.10"
 dependencies = [
     "llm-sdk",
     "pydantic",
-    "numpy"
+    "numpy",
+    "accelerate"
 ]
 
 [tool.uv.workspace]

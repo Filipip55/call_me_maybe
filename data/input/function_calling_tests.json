@@ -6,16 +6,16 @@
     "prompt": "What is the sum of 265 and 345?"
   },
   {
-    "prompt": "Greet shrek"
+    "prompt": "Greet Quifrey"
   },
   {
-    "prompt": "Greet john"
+    "prompt": "Greet Raffaela"
   },
   {
-    "prompt": "Reverse the string 'hello'"
+    "prompt": "Reverse the string 'ciao'"
   },
   {
-    "prompt": "Reverse the string 'world'"
+    "prompt": "Reverse the string 'mondo'"
   },
   {
     "prompt": "What is the square root of 16?"
@@ -24,12 +24,12 @@
     "prompt": "Calculate the square root of 144"
   },
   {
-    "prompt": "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS"
+    "prompt": "Replace all numbers in \"Ciao 3348 io ho 389 anni\" with NUMBERS"
   },
   {
-    "prompt": "Replace all vowels in 'Programming is fun' with asterisks"
+    "prompt": "Replace all vowels in 'Lanciare magie è divertente' with asterisks"
   },
   {
-    "prompt": "Substitute the word 'cat' with 'dog' in 'The cat sat on the mat with another cat'"
+    "prompt": "Substitute the word 'gatto' with 'cane' in 'Il gatto si è seduto sul tappeto accanto al gatto'"
   }
 ]
