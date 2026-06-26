@@ -3,21 +3,25 @@ from .schema import FunctionDefinition
 
 
 class State:
+    """Rappresenta uno stato di un automa a stati finiti non deterministico (NFA)."""
     def __init__(self) -> None:
         self.transitions: Dict[str, Set['State']] = {}
         self.epsilon_transitions: Set['State'] = set()
         self.is_final = False
 
     def add_transition(self, char: str, state: 'State') -> None:
+        """Aggiunge una transizione basata su un carattere (o '*' per wildcard)."""
         if char not in self.transitions:
             self.transitions[char] = set()
         self.transitions[char].add(state)
 
     def add_epsilon(self, state: 'State') -> None:
+        """Aggiunge una transizione epsilon (vuota) verso un altro stato."""
         self.epsilon_transitions.add(state)
 
 
 def epsilon_closure(states: Set[State]) -> Set[State]:
+    """Calcola la chiusura epsilon: tutti gli stati raggiungibili senza consumare caratteri."""
     closure = set(states)
     stack = list(states)
     while stack:
@@ -30,6 +34,7 @@ def epsilon_closure(states: Set[State]) -> Set[State]:
 
 
 def advance_nfa(states: Set[State], char: str) -> Set[State]:
+    """Calcola il prossimo set di stati consumando un carattere specifico."""
     next_states = set()
     for state in states:
         if char in state.transitions:
@@ -41,6 +46,7 @@ def advance_nfa(states: Set[State], char: str) -> Set[State]:
 
 
 def build_literal(text: str) -> tuple[State, State]:
+    """Costruisce un NFA per una stringa letterale (es. chiavi JSON o sintassi)."""
     start = State()
     current = start
     for char in text:
@@ -51,6 +57,7 @@ def build_literal(text: str) -> tuple[State, State]:
 
 
 def build_whitespace() -> tuple[State, State]:
+    """Costruisce un NFA per gli spazi bianchi opzionali."""
     start = State()
     end = State()
     start.add_epsilon(end)
@@ -60,6 +67,7 @@ def build_whitespace() -> tuple[State, State]:
 
 
 def build_number() -> tuple[State, State]:
+    """Costruisce un NFA per i numeri JSON (es. interi, decimali, negativi)."""
     start = State()
     end = State()
 
@@ -86,6 +94,7 @@ def build_number() -> tuple[State, State]:
 
 
 def build_string() -> tuple[State, State]:
+    """Costruisce un NFA per le stringhe JSON, inclusi i caratteri di escape."""
     start = State()
     end = State()
 
@@ -107,6 +116,7 @@ def build_string() -> tuple[State, State]:
 
 
 def build_boolean() -> tuple[State, State]:
+    """Costruisce un NFA per i valori booleani (true o false)."""
     start = State()
     end = State()
     t_start, t_end = build_literal("true")
@@ -119,6 +129,7 @@ def build_boolean() -> tuple[State, State]:
 
 
 def concat_nfas(nfas: List[tuple[State, State]]) -> tuple[State, State]:
+    """Concatena una lista di NFA sequenzialmente."""
     if not nfas:
         s = State()
         return s, s
@@ -130,6 +141,7 @@ def concat_nfas(nfas: List[tuple[State, State]]) -> tuple[State, State]:
 
 
 def build_choice(nfas: List[tuple[State, State]]) -> tuple[State, State]:
+    """Crea una scelta alternativa (OR logico) tra vari NFA."""
     start = State()
     end = State()
     for n_start, n_end in nfas:
@@ -139,6 +151,7 @@ def build_choice(nfas: List[tuple[State, State]]) -> tuple[State, State]:
 
 
 def build_schema_nfa(functions: List[FunctionDefinition]) -> tuple[State, State]:
+    """Costruisce l'NFA globale che rappresenta l'intero schema JSON permesso."""
     nfas = []
 
     for fn in functions:
@@ -164,7 +177,7 @@ def build_schema_nfa(functions: List[FunctionDefinition]) -> tuple[State, State]
             elif p_def.type == "boolean":
                 parts.append(build_boolean())
             else:
-                # Default fallback
+                # Fallback predefinito
                 parts.append(build_string())
 
             parts.append(build_whitespace())

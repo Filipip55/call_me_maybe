@@ -4,12 +4,14 @@ from .fsm import State, advance_nfa, epsilon_closure
 
 
 class TrieNode:
+    """Nodo del Prefix Tree per il vocabolario."""
     def __init__(self) -> None:
         self.children: Dict[str, 'TrieNode'] = {}
         self.token_id: int | None = None
 
 
 class Vocabulary:
+    """Struttura Trie che memorizza i token validi dell'LLM decodificati in stringhe."""
     def __init__(self, llm: Any) -> None:
         vocab_path = llm.get_path_to_vocab_file()
         with open(vocab_path, 'r', encoding='utf-8') as f:
@@ -17,17 +19,18 @@ class Vocabulary:
 
         self.root = TrieNode()
 
-        # Build Trie using actual decoded strings
+        # Costruisce il Trie decodificando i token in stringhe
         for token_str, token_id in vocab.items():
             decoded_str = llm.decode([token_id])
             if '\ufffd' in decoded_str:
-                # Skip invalid utf-8 sequences
+                # Salta le sequenze UTF-8 non valide
                 continue
             if not decoded_str:
                 continue
             self._insert(decoded_str, token_id)
 
     def _insert(self, decoded_str: str, token_id: int) -> None:
+        """Inserisce una stringa e il relativo token ID all'interno del Trie."""
         node = self.root
         for char in decoded_str:
             if char not in node.children:
@@ -37,6 +40,7 @@ class Vocabulary:
 
 
 class JSONStateMachine:
+    """Gestisce l'evoluzione dello stato e il calcolo dei token permessi, tramite intersezione NFA/Trie."""
     def __init__(self, start_state: State, end_state: State):
         self.start_state = start_state
         self.end_state = end_state
@@ -44,7 +48,7 @@ class JSONStateMachine:
         self.memo: Dict[Any, frozenset] = {}
 
     def advance(self, text: str) -> bool:
-        """Advances the state machine by the given text. Returns True if successful."""
+        """Avanza la macchina a stati consumando i caratteri della stringa in input. Restituisce True se valido."""
         states = self.current_states
         for char in text:
             states = advance_nfa(states, char)
@@ -54,7 +58,7 @@ class JSONStateMachine:
         return True
 
     def get_valid_next_tokens(self, vocab: Vocabulary) -> List[int]:
-        """Returns a list of token IDs that are valid continuations from the current state."""
+        """Restituisce una lista di ID di token che rappresentano continuazioni valide dallo stato attuale."""
         valid_tokens = []
 
         def dfs(node: TrieNode, states: frozenset) -> None:
@@ -74,4 +78,5 @@ class JSONStateMachine:
         return list(set(valid_tokens))
 
     def is_finished(self) -> bool:
+        """Controlla se lo stato finale è stato raggiunto."""
         return self.end_state in self.current_states

@@ -8,13 +8,14 @@ from .generator import generate_constrained
 
 
 def main() -> None:
+    """Punto di ingresso principale: analizza argomenti, carica i dati ed esegue l'LLM."""
     parser = argparse.ArgumentParser(description="Function Calling via Constrained Decoding")
     parser.add_argument("--functions_definition", type=str, default="data/input/functions_definition.json")
     parser.add_argument("--input", type=str, default="data/input/function_calling_tests.json")
     parser.add_argument("--output", type=str, default="data/output/function_calling_results.json")
     args = parser.parse_args()
 
-    # Create output directory if it doesn't exist
+    # Crea la cartella di output se non esiste
     os.makedirs(os.path.dirname(args.output), exist_ok=True)
 
     print("Loading schemas and input data...")
@@ -42,7 +43,7 @@ def main() -> None:
         except Exception as e:
             print(f"Error parsing generated JSON: {e}")
             print(f"Generated text was: {json_str}")
-            # Fallback for gracefully handling errors
+            # Fallback in caso di errore
             results.append({
                 "prompt": test.prompt,
                 "name": "error",
