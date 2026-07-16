@@ -43,7 +43,7 @@ def main() -> None:
         except Exception as e:
             print(f"Error parsing generated JSON: {e}")
             print(f"Generated text was: {json_str}")
-            # Fallback in caso di errore
+            # Fallback in caso di errore (non fa errori)
             results.append({
                 "prompt": test.prompt,
                 "name": "error",
