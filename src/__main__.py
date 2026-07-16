@@ -15,7 +15,7 @@ def main() -> None:
     parser.add_argument("--output", type=str, default="data/output/function_calling_results.json")
     args = parser.parse_args()
 
-    # Crea la cartella di output se non esiste
+    # Crea la cartella di output (se non esiste)
     os.makedirs(os.path.dirname(args.output), exist_ok=True)
 
     print("Loading schemas and input data...")
