@@ -27,9 +27,9 @@
     "prompt": "Replace all numbers in \"Ciao 3348 io ho 389 anni\" with NUMBERS"
   },
   {
-    "prompt": "Replace all vowels in 'Lanciare magie è divertente' with asterisks"
+    "prompt": "Replace all vowels in 'Mi piace lanciare magie' with asterisks"
   },
   {
-    "prompt": "Substitute the word 'gatto' with 'cane' in 'Il gatto si è seduto sul tappeto accanto al gatto'"
+    "prompt": "Substitute the word 'gatto' with 'cane' in 'Il gatto si siede sul tappeto accanto al gatto'"
   }
 ]

@@ -18,7 +18,7 @@ debug:
 	uv run python -m pdb -m src
 
 clean:
-	rm -rf __pycache__ .mypy_cache src/__pycache__ llm_sdk/__pycache__ data/output/*
+	rm -rf __pycache__ .mypy_cache src/__pycache__ src/llm_sdk/__pycache__ data/output/*
 
 lint:
 	uv run flake8 .
