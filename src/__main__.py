@@ -7,6 +7,12 @@ from .constrained_decoder import Vocabulary
 from .generator import generate_constrained
 
 
+# cambiato subject
+# cosa e' cambiato dal vecchio subject e di apportare i cambiamenti richiesti
+
+
+
+
 def main() -> None:
     """Punto di ingresso principale: analizza argomenti, carica i dati ed esegue l'LLM."""
     parser = argparse.ArgumentParser(description="Function Calling via Constrained Decoding")

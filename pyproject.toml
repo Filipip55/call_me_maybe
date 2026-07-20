@@ -11,7 +11,7 @@ dependencies = [
 
 [tool.uv.workspace]
 members = [
-    "llm_sdk",
+    "src/llm_sdk",
 ]
 
 [tool.uv.sources]
@@ -20,7 +20,7 @@ llm-sdk = { workspace = true }
 [tool.mypy]
 exclude = [
     '^\\.venv/',
-    '^llm_sdk/',
+    '^src/llm_sdk/',
 ]
 
 [dependency-groups]
