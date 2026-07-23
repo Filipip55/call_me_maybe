@@ -1,16 +1,43 @@
 import argparse
 import json
 import os
+from typing import List, Dict, Any
 from llm_sdk import Small_LLM_Model  # type: ignore
-from .schema import load_functions_definition, load_prompts, FunctionCallingResult
+from .schema import load_functions_definition, load_prompts, FunctionCallingResult, FunctionDefinition
 from .constrained_decoder import Vocabulary
 from .generator import generate_constrained
 
 
-# cambiato subject
-# cosa e' cambiato dal vecchio subject e di apportare i cambiamenti richiesti
-
-
+def normalize_parameters(fn_name: str, params: Dict[str, Any], functions: List[FunctionDefinition]) -> Dict[str, Any]:
+    """Normalizza i tipi dei parametri in base allo schema della funzione."""
+    fn_map = {fn.name: fn for fn in functions}
+    if fn_name not in fn_map:
+        return params
+    fn_def = fn_map[fn_name]
+    normalized = {}
+    for p_name, p_val in params.items():
+        if p_name in fn_def.parameters:
+            expected_type = fn_def.parameters[p_name].type
+            if expected_type == "number":
+                try:
+                    normalized[p_name] = float(p_val)
+                except (ValueError, TypeError):
+                    normalized[p_name] = p_val
+            elif expected_type == "integer":
+                try:
+                    normalized[p_name] = int(p_val)
+                except (ValueError, TypeError):
+                    normalized[p_name] = p_val
+            elif expected_type == "boolean":
+                if isinstance(p_val, str):
+                    normalized[p_name] = p_val.lower() == "true"
+                else:
+                    normalized[p_name] = bool(p_val)
+            else:
+                normalized[p_name] = p_val
+        else:
+            normalized[p_name] = p_val
+    return normalized
 
 
 def main() -> None:
@@ -40,10 +67,14 @@ def main() -> None:
 
         try:
             parsed = json.loads(json_str)
+            fn_name = parsed.get("name", "")
+            raw_params = parsed.get("parameters", {})
+            norm_params = normalize_parameters(fn_name, raw_params, functions)
+
             res = FunctionCallingResult(
                 prompt=test.prompt,
-                name=parsed.get("name", ""),
-                parameters=parsed.get("parameters", {})
+                name=fn_name,
+                parameters=norm_params
             )
             results.append(res.model_dump())
         except Exception as e:

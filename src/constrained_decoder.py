@@ -1,5 +1,5 @@
 import json
-from typing import Dict, List, Set, Any
+from typing import Dict, List, Any
 from .fsm import State, advance_nfa, epsilon_closure
 
 
@@ -46,6 +46,7 @@ class JSONStateMachine:
         self.end_state = end_state
         self.current_states = epsilon_closure({self.start_state})
         self.memo: Dict[Any, frozenset] = {}
+        self.valid_tokens_memo: Dict[frozenset, List[int]] = {}
 
     def advance(self, text: str) -> bool:
         """Avanza la macchina a stati consumando i caratteri della stringa in input. Restituisce True se valido."""
@@ -59,6 +60,10 @@ class JSONStateMachine:
 
     def get_valid_next_tokens(self, vocab: Vocabulary) -> List[int]:
         """Restituisce una lista di ID di token che rappresentano continuazioni valide dallo stato attuale."""
+        states_key = frozenset(self.current_states)
+        if states_key in self.valid_tokens_memo:
+            return self.valid_tokens_memo[states_key]
+
         valid_tokens = []
 
         def dfs(node: TrieNode, states: frozenset) -> None:
@@ -70,12 +75,14 @@ class JSONStateMachine:
                 if key not in self.memo:
                     self.memo[key] = frozenset(advance_nfa(set(states), char))
                 next_states = self.memo[key]
-                
+
                 if next_states:
                     dfs(child_node, next_states)
 
-        dfs(vocab.root, frozenset(self.current_states))
-        return list(set(valid_tokens))
+        dfs(vocab.root, states_key)
+        result = list(set(valid_tokens))
+        self.valid_tokens_memo[states_key] = result
+        return result
 
     def is_finished(self) -> bool:
         """Controlla se lo stato finale è stato raggiunto."""

@@ -66,8 +66,8 @@ def build_whitespace() -> tuple[State, State]:
     return start, end
 
 
-def build_number() -> tuple[State, State]:
-    """Costruisce un NFA per i numeri JSON (es. interi, decimali, negativi)."""
+def build_integer() -> tuple[State, State]:
+    """Costruisce un NFA per gli interi JSON (es. -12, 0, 42) senza virgola e senza apici."""
     start = State()
     end = State()
 
@@ -81,6 +81,22 @@ def build_number() -> tuple[State, State]:
         int_part.add_transition(d, int_part)
 
     int_part.add_epsilon(end)
+    return start, end
+
+
+def build_number() -> tuple[State, State]:
+    """Costruisce un NFA per i numeri decimali/float JSON (richiede punto decimale, es. 3.0)."""
+    start = State()
+    end = State()
+
+    minus = State()
+    start.add_transition('-', minus)
+    start.add_epsilon(minus)
+
+    int_part = State()
+    for d in "0123456789":
+        minus.add_transition(d, int_part)
+        int_part.add_transition(d, int_part)
 
     dot = State()
     int_part.add_transition('.', dot)
@@ -172,6 +188,8 @@ def build_schema_nfa(functions: List[FunctionDefinition]) -> tuple[State, State]
 
             if p_def.type == "number":
                 parts.append(build_number())
+            elif p_def.type == "integer":
+                parts.append(build_integer())
             elif p_def.type == "string":
                 parts.append(build_string())
             elif p_def.type == "boolean":

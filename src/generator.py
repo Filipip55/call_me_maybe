@@ -1,4 +1,4 @@
-import math
+import numpy as np
 from typing import List, Any
 from .schema import FunctionDefinition
 from .constrained_decoder import Vocabulary, JSONStateMachine
@@ -13,6 +13,10 @@ def build_prompt(user_prompt: str, functions: List[FunctionDefinition]) -> str:
         prompt += f"- {fn.name}: {fn.description}\n"
         for p_name, p_def in fn.parameters.items():
             prompt += f"  - {p_name} ({p_def.type}): {p_def.description or ''}\n"
+    prompt += (
+        "Extract string parameters EXACTLY as written in the user prompt. "
+        "Do not remove or alter any internal quotes (e.g., \"hello\" must remain \"hello\").\n"
+    )
     prompt += "Output exactly ONE valid JSON object representing the function call.\n"
     prompt += "<|im_end|>\n<|im_start|>user\n"
     prompt += f"{user_prompt}\n<|im_end|>\n<|im_start|>assistant\n"
@@ -44,17 +48,16 @@ def generate_constrained(llm: Any, user_prompt: str, functions: List[FunctionDef
         # Ottiene i token validi intersecando il Trie con l'NFA
         valid_tokens = fsm.get_valid_next_tokens(vocab)
 
-        if not valid_tokens:
+        valid_in_range = [t_id for t_id in valid_tokens if t_id < len(logits)]
+        if not valid_in_range:
             break
 
-        # Azzera (o setta a -inf) i logits dei token non validi
-        constrained_logits = [-math.inf] * len(logits)
-        for t_id in valid_tokens:
-            if t_id < len(logits):
-                constrained_logits[t_id] = logits[t_id]
-
-        # Seleziona il token con il logit maggiore (Argmax)
-        best_token = max(range(len(logits)), key=lambda i: constrained_logits[i])
+        # Usa numpy per un argmax ultra-veloce in C invece di un ciclo Python
+        logits_np = np.array(logits)
+        valid_logits = logits_np[valid_in_range]
+        best_idx = np.argmax(valid_logits)
+        best_token = valid_in_range[best_idx]
+        
         generated_ids.append(best_token)
 
         # Avanza lo stato dell'NFA consumando la stringa del token scelto
