@@ -55,6 +55,12 @@ def main() -> None:
     functions = load_functions_definition(args.functions_definition)
     prompts = load_prompts(args.input)
 
+    if not prompts:
+        print("No valid prompts to process. Writing empty results file...")
+        with open(args.output, 'w', encoding='utf-8') as f:
+            json.dump([], f, indent=2)
+        return
+
     print("Initializing model and vocabulary...")
     llm = Small_LLM_Model()
     vocab = Vocabulary(llm)
