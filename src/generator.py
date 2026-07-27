@@ -15,7 +15,7 @@ def build_prompt(user_prompt: str, functions: List[FunctionDefinition]) -> str:
             prompt += f"  - {p_name} ({p_def.type}): {p_def.description or ''}\n"
     prompt += (
         "Extract string parameters EXACTLY as written in the user prompt. "
-        "Do not remove or alter any internal quotes (e.g., \"hello\" must remain \"hello\").\n"
+        "It is EXTREMELY important that you do not remove or alter any internal quotes (e.g., \"hello\" must remain \"hello\").\n"
     )
     prompt += "Output exactly ONE valid JSON object representing the function call.\n"
     prompt += "<|im_end|>\n<|im_start|>user\n"

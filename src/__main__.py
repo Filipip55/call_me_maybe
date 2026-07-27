@@ -62,7 +62,7 @@ def main() -> None:
     results = []
     print(f"Processing {len(prompts)} prompts...")
     for i, test in enumerate(prompts):
-        print(f"[{i+1}/{len(prompts)}] Generating for prompt: {test.prompt}")
+        print(f"[{i+1}/{len(prompts)}] Generating function call for the following prompt: {test.prompt}")
         json_str = generate_constrained(llm, test.prompt, functions, vocab)
 
         try:
