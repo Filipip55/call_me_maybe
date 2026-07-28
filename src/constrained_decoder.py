@@ -23,14 +23,14 @@ class Vocabulary:
         for token_str, token_id in vocab.items():
             decoded_str = llm.decode([token_id])
             if '\ufffd' in decoded_str:
-                # Salta le sequenze UTF-8 non valide
+                # Salta le sequenze UTF-8 sconosciute
                 continue
             if not decoded_str:
                 continue
             self._insert(decoded_str, token_id)
 
     def _insert(self, decoded_str: str, token_id: int) -> None:
-        """Inserisce una stringa e il relativo token ID all'interno del Trie."""
+        """Attraversa il Trie finché il char da inserire non compare più tra i children di altri nodi."""
         node = self.root
         for char in decoded_str:
             if char not in node.children:
@@ -91,26 +91,3 @@ class JSONStateMachine:
     def reset(self) -> None:
         """Reimposta la macchina a stati al suo stato iniziale per processare un nuovo prompt."""
         self.current_states = epsilon_closure({self.start_state})
-
-    def get_deterministic_char(self) -> str | None:
-        """
-        Controlla se c'è un solo carattere ASCII valido per proseguire (situazione deterministica).
-        Se sì, lo restituisce. Altrimenti restituisce None.
-        Utilizza la cache per evitare ricalcoli costosi.
-        """
-        valid_char = None
-        states_key = frozenset(self.current_states)
-
-        # Controlliamo i caratteri stampabili standard (ASCII 32-126)
-        for i in range(32, 127):
-            char = chr(i)
-            key = (states_key, char)
-            if key not in self.memo:
-                self.memo[key] = frozenset(advance_nfa(set(self.current_states), char))
-
-            if self.memo[key]:
-                if valid_char is not None:
-                    return None  # Più di una scelta possibile
-                valid_char = char
-
-        return valid_char
