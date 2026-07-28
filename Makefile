@@ -23,3 +23,9 @@ clean:
 lint:
 	uv run flake8 .
 	uv run mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+
+moulinette_private:
+	uv run python -m moulinette prepare_exercises --output="data" --set="private"
+
+moulinette_grade_private:
+	uv run python -m moulinette grade_student_answers data/output/function_calling_results.json --set="private"
