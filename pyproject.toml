@@ -21,6 +21,7 @@ llm-sdk = { workspace = true }
 exclude = [
     '^\\.venv/',
     '^src/llm_sdk/',
+    '^moulinette/',
 ]
 
 [dependency-groups]

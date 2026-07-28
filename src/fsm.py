@@ -100,6 +100,8 @@ def build_number() -> tuple[State, State]:
 
     dot = State()
     int_part.add_transition('.', dot)
+    int_part.add_epsilon(end)  # Allow integer numbers
+
     frac_part = State()
     for d in "0123456789":
         dot.add_transition(d, frac_part)
@@ -167,19 +169,18 @@ def build_choice(nfas: List[tuple[State, State]]) -> tuple[State, State]:
 
 
 def build_schema_nfa(functions: List[FunctionDefinition]) -> tuple[State, State]:
-    """Costruisce l'NFA globale che rappresenta l'intero schema JSON permesso."""
+    """Costruisce l'NFA globale che rappresenta l'intero schema JSON permesso, forzando la keyword 'parameters'."""
     nfas = []
 
     for fn in functions:
         parts = []
         parts.append(build_literal('{"name":'))
         parts.append(build_whitespace())
-        parts.append(build_literal(f'"{fn.name}"'))
+        parts.append(build_literal(f'"{fn.name}",'))
         parts.append(build_whitespace())
-        parts.append(build_literal(',"parameters":'))
+        parts.append(build_literal('"parameters":'))
         parts.append(build_whitespace())
         parts.append(build_literal('{'))
-        parts.append(build_whitespace())
 
         params = list(fn.parameters.items())
         for i, (p_name, p_def) in enumerate(params):
@@ -195,20 +196,51 @@ def build_schema_nfa(functions: List[FunctionDefinition]) -> tuple[State, State]
             elif p_def.type == "boolean":
                 parts.append(build_boolean())
             else:
-                # Fallback predefinito
                 parts.append(build_string())
 
-            parts.append(build_whitespace())
             if i < len(params) - 1:
                 parts.append(build_literal(','))
                 parts.append(build_whitespace())
 
         parts.append(build_literal('}'))
-        parts.append(build_whitespace())
         parts.append(build_literal('}'))
 
         fn_nfa = concat_nfas(parts)
         nfas.append(fn_nfa)
 
-    final_choice = build_choice(nfas)
-    return final_choice
+    return build_choice(nfas)
+
+
+def build_name_selection_nfa(functions: List[FunctionDefinition]) -> tuple[State, State]:
+    """Costruisce un NFA che accetta solo i nomi validi delle funzioni come stringhe letterali."""
+    name_nfas = [build_literal(fn.name) for fn in functions]
+    return build_choice(name_nfas)
+
+
+def build_single_function_params_nfa(fn: FunctionDefinition) -> tuple[State, State]:
+    """Costruisce un NFA per l'oggetto JSON dei parametri di una singola funzione."""
+    parts = []
+    parts.append(build_literal('{'))
+
+    params = list(fn.parameters.items())
+    for i, (p_name, p_def) in enumerate(params):
+        parts.append(build_literal(f'"{p_name}":'))
+        parts.append(build_whitespace())
+
+        if p_def.type == "number":
+            parts.append(build_number())
+        elif p_def.type == "integer":
+            parts.append(build_integer())
+        elif p_def.type == "string":
+            parts.append(build_string())
+        elif p_def.type == "boolean":
+            parts.append(build_boolean())
+        else:
+            parts.append(build_string())
+
+        if i < len(params) - 1:
+            parts.append(build_literal(','))
+            parts.append(build_whitespace())
+
+    parts.append(build_literal('}'))
+    return concat_nfas(parts)

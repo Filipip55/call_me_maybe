@@ -5,7 +5,7 @@ from typing import List, Dict, Any
 from llm_sdk import Small_LLM_Model  # type: ignore
 from .schema import load_functions_definition, load_prompts, FunctionCallingResult, FunctionDefinition
 from .constrained_decoder import Vocabulary
-from .generator import generate_constrained
+from .generator import generate_function_call
 
 
 def normalize_parameters(fn_name: str, params: Dict[str, Any], functions: List[FunctionDefinition]) -> Dict[str, Any]:
@@ -55,6 +55,10 @@ def main() -> None:
     functions = load_functions_definition(args.functions_definition)
     prompts = load_prompts(args.input)
 
+    if not functions:
+        print("Error: No valid function definitions found. Cannot proceed.")
+        return
+
     if not prompts:
         print("No valid prompts to process. Writing empty results file...")
         with open(args.output, 'w', encoding='utf-8') as f:
@@ -69,7 +73,7 @@ def main() -> None:
     print(f"Processing {len(prompts)} prompts...")
     for i, test in enumerate(prompts):
         print(f"[{i+1}/{len(prompts)}] Generating function call for the following prompt: {test.prompt}")
-        json_str = generate_constrained(llm, test.prompt, functions, vocab)
+        json_str = generate_function_call(llm, test.prompt, functions, vocab)
 
         try:
             parsed = json.loads(json_str)

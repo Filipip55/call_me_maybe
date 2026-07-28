@@ -1,68 +1,122 @@
+import json
 import numpy as np
 from typing import List, Any
 from .schema import FunctionDefinition
 from .constrained_decoder import Vocabulary, JSONStateMachine
-from .fsm import build_schema_nfa
+from .fsm import build_name_selection_nfa, build_single_function_params_nfa
 
 
-def build_prompt(user_prompt: str, functions: List[FunctionDefinition]) -> str:
-    """Costruisce il prompt formattato in stile ChatML per guidare il modello."""
-    prompt = "<|im_start|>system\nYou are a helpful assistant that translates natural language to function calls.\n"
-    prompt += "Available functions:\n"
-    for fn in functions:
-        prompt += f"- {fn.name}: {fn.description}\n"
-        for p_name, p_def in fn.parameters.items():
-            prompt += f"  - {p_name} ({p_def.type}): {p_def.description or ''}\n"
-    prompt += (
-        "Extract string parameters EXACTLY as written in the user prompt. "
-        "It is EXTREMELY important that you do not remove or alter any internal quotes (e.g., \"hello\" must remain \"hello\").\n"
+def build_selection_prompt(user_prompt: str, functions: List[FunctionDefinition]) -> str:
+    """Costruisce un prompt per la selezione del nome della funzione."""
+    fn_list = "\n".join(
+        f"- {fn.name}: {fn.description}" for fn in functions
     )
-    prompt += "Output exactly ONE valid JSON object representing the function call.\n"
-    prompt += "<|im_end|>\n<|im_start|>user\n"
-    prompt += f"{user_prompt}\n<|im_end|>\n<|im_start|>assistant\n"
+    prompt = (
+        f"<|im_start|>system\n"
+        f"You are a function router. Given a user request, reply with ONLY "
+        f"the function name that best matches. No explanation.\n"
+        f"Available functions:\n{fn_list}\n"
+        f"<|im_end|>\n"
+        f"<|im_start|>user\n{user_prompt}\n<|im_end|>\n"
+        f"<|im_start|>assistant\n"
+    )
     return prompt
 
 
-def generate_constrained(llm: Any, user_prompt: str, functions: List[FunctionDefinition], vocab: Vocabulary) -> str:
-    """Genera la risposta dell'LLM forzando la validità del JSON tramite l'NFA e il Trie."""
-    start_state, end_state = build_schema_nfa(functions)
-    fsm = JSONStateMachine(start_state, end_state)
+def build_extraction_prompt(
+    user_prompt: str, fn: FunctionDefinition
+) -> str:
+    """Costruisce un prompt per l'estrazione dei parametri di una singola funzione."""
+    params_desc = ", ".join(
+        f"{name} ({pdef.type})" for name, pdef in fn.parameters.items()
+    )
+    prompt = (
+        f"<|im_start|>system\n"
+        f"Extract the parameters for {fn.name} from the user message.\n"
+        f"Parameters: {params_desc}\n"
+        f"Reply with ONLY a JSON object of the parameters. "
+        f"Extract values exactly as written.\n"
+        f"<|im_end|>\n"
+        f"<|im_start|>user\n{user_prompt}\n<|im_end|>\n"
+        f"<|im_start|>assistant\n"
+    )
+    return prompt
 
-    full_prompt = build_prompt(user_prompt, functions)
 
-    # llm.encode restituisce un tensore 2D, a noi serve una lista di interi
-    input_ids_tensor = llm.encode(full_prompt)
-    input_ids = input_ids_tensor.tolist()[0]
-
-    generated_ids: List[int] = []
-    max_tokens = 100
+def generate_constrained_text(
+    llm: Any,
+    prompt: str,
+    vocab: Vocabulary,
+    fsm: JSONStateMachine,
+    max_tokens: int = 100,
+) -> str:
+    """Genera testo con constrained decoding tramite NFA e Trie del vocabolario."""
+    fsm.reset()
+    generated_text = ""
 
     for _ in range(max_tokens):
-        # Interrompe se la macchina a stati ha raggiunto lo stato finale
         if fsm.is_finished():
             break
 
-        current_input = input_ids + generated_ids
+        current_input = llm.encode(prompt + generated_text).tolist()[0]
         logits = llm.get_logits_from_input_ids(current_input)
 
-        # Ottiene i token validi intersecando il Trie con l'NFA
         valid_tokens = fsm.get_valid_next_tokens(vocab)
-
         valid_in_range = [t_id for t_id in valid_tokens if t_id < len(logits)]
         if not valid_in_range:
             break
 
-        # Usa numpy per un argmax ultra-veloce in C invece di un ciclo Python
         logits_np = np.array(logits)
         valid_logits = logits_np[valid_in_range]
         best_idx = np.argmax(valid_logits)
         best_token = valid_in_range[best_idx]
-        
-        generated_ids.append(best_token)
 
-        # Avanza lo stato dell'NFA consumando la stringa del token scelto
         token_str = llm.decode([best_token])
+        generated_text += token_str
+
         if not fsm.advance(token_str):
             break
 
-    return str(llm.decode(generated_ids))
+    return generated_text
+
+
+def generate_function_call(
+    llm: Any,
+    user_prompt: str,
+    functions: List[FunctionDefinition],
+    vocab: Vocabulary,
+) -> str:
+    """Orchestratore a due fasi: seleziona la funzione, poi ne estrae i parametri.
+
+    Fase 1: Prompt minimale + NFA ristretto ai nomi → nome della funzione.
+    Fase 2: Prompt con singola funzione + NFA per i suoi parametri → JSON parametri.
+    Assembla il risultato finale in Python.
+    """
+    fn_map = {fn.name: fn for fn in functions}
+
+    # --- Fase 1: Selezione della funzione ---
+    selection_prompt = build_selection_prompt(user_prompt, functions)
+    name_start, name_end = build_name_selection_nfa(functions)
+    name_fsm = JSONStateMachine(name_start, name_end)
+
+    selected_name = generate_constrained_text(
+        llm, selection_prompt, vocab, name_fsm, max_tokens=30
+    )
+    selected_name = selected_name.strip()
+
+    selected_fn = fn_map[selected_name]
+
+    # --- Fase 2: Estrazione dei parametri ---
+    extraction_prompt = build_extraction_prompt(user_prompt, selected_fn)
+    params_start, params_end = build_single_function_params_nfa(selected_fn)
+    params_fsm = JSONStateMachine(params_start, params_end)
+
+    params_json = generate_constrained_text(
+        llm, extraction_prompt, vocab, params_fsm, max_tokens=100
+    )
+
+    result = json.dumps({
+        "name": selected_name,
+        "parameters": json.loads(params_json)
+    })
+    return result

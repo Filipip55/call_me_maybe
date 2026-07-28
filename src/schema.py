@@ -1,4 +1,5 @@
 import json
+import sys
 from typing import Dict, Any, List, Optional
 from pydantic import BaseModel
 
@@ -51,13 +52,16 @@ def load_functions_definition(path: str) -> List[FunctionDefinition]:
         return functions
     except FileNotFoundError:
         print(f"Error: Function definitions file not found: '{path}'")
-        return []
+        sys.exit(1)
     except json.JSONDecodeError as e:
-        print(f"Error: Malformed JSON in function definitions file '{path}': {e}")
-        return []
+        print(
+            f"Error: Malformed JSON in '{path}' "
+            f"at line {e.lineno}, column {e.colno}: {e.msg}"
+        )
+        sys.exit(1)
     except Exception as e:
         print(f"Error loading function definitions from '{path}': {e}")
-        return []
+        sys.exit(1)
 
 
 def load_prompts(path: str) -> List[PromptTest]:
@@ -67,7 +71,7 @@ def load_prompts(path: str) -> List[PromptTest]:
             data = json.load(f)
         if not isinstance(data, list):
             print(f"Error: Prompts file '{path}' must contain a JSON list.")
-            return []
+            sys.exit(1)
         prompts = []
         for item in data:
             try:
@@ -80,11 +84,13 @@ def load_prompts(path: str) -> List[PromptTest]:
         return prompts
     except FileNotFoundError:
         print(f"Error: Prompts input file not found: '{path}'")
-        return []
+        sys.exit(1)
     except json.JSONDecodeError as e:
-        print(f"Error: Malformed JSON in prompts input file '{path}': {e}")
-        return []
+        print(
+            f"Error: Malformed JSON in '{path}' "
+            f"at line {e.lineno}, column {e.colno}: {e.msg}"
+        )
+        sys.exit(1)
     except Exception as e:
         print(f"Error loading prompts from '{path}': {e}")
-        return []
-
+        sys.exit(1)
