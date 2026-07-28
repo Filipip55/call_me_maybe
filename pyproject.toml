@@ -6,8 +6,7 @@ dependencies = [
     "llm-sdk",
     "pydantic",
     "numpy",
-    "accelerate",
-    "moulinette"
+    "accelerate"
 ]
 
 [tool.uv.workspace]
@@ -17,7 +16,6 @@ members = [
 
 [tool.uv.sources]
 llm-sdk = { workspace = true }
-moulinette = { path = "./moulinette" }
 
 [tool.mypy]
 exclude = [
