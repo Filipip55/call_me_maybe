@@ -13,6 +13,8 @@ except ImportError:
     COLORS_AVAILABLE = False
 
 # Check if we're in a terminal that supports colors
+
+
 def _supports_color() -> bool:
     if not COLORS_AVAILABLE:
         return False
