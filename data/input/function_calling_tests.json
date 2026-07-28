@@ -1,26 +1,35 @@
 [
   {
-    "prompt": "Calculate the BMI for a person weighing 70 kg with a height of 1.75 meters"
+    "prompt": "What is the product of 3 and 5?"
   },
   {
-    "prompt": "What is the BMI of someone who weighs 85 kg and is 1.80 meters tall?"
+    "prompt": "What is the product of 12 and 4?"
   },
   {
-    "prompt": "Convert 100 degrees Celsius to Fahrenheit"
+    "prompt": "Is 4 an even number?"
   },
   {
-    "prompt": "Convert 98.6 Fahrenheit to Celsius"
+    "prompt": "Is 7 an even number?"
   },
   {
-    "prompt": "Send an email to alice@example.com with subject 'Project Update' and body 'The task is completed.'"
+    "prompt": "Calculate compound interest on 1234567.89 at 0.0375 rate for 23 years"
   },
   {
-    "prompt": "Count how many words are in the text 'The quick brown fox jumps over the lazy dog.'"
+    "prompt": "Execute SQL query 'SELECT * FROM users' on the production database"
   },
   {
-    "prompt": "Generate a random integer between 1 and 100"
+    "prompt": "Run the query 'INSERT INTO logs VALUES (1, 2, 3)' on the system database"
   },
   {
-    "prompt": "Give me a random integer between 50 and 500"
+    "prompt": "Read the file at /home/user/data.json with utf-8 encoding"
+  },
+  {
+    "prompt": "Read C:\\Users\\john\\config.ini with latin-1 encoding"
+  },
+  {
+    "prompt": "Format template: Hello {user}'s profile!"
+  },
+  {
+    "prompt": "Format template: Say \"hello\" to {name}"
   }
 ]

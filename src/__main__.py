@@ -41,7 +41,7 @@ def normalize_parameters(fn_name: str, params: Dict[str, Any], functions: List[F
 
 
 def main() -> None:
-    """Punto di ingresso principale: analizza argomenti, carica i dati ed esegue l'LLM."""
+    """Punto di ingresso principale, analizza argomenti ed esegue l'LLM."""
     parser = argparse.ArgumentParser(description="Function Calling via Constrained Decoding")
     parser.add_argument("--functions_definition", type=str, default="data/input/functions_definition.json")
     parser.add_argument("--input", type=str, default="data/input/function_calling_tests.json")

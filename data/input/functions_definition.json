@@ -1,12 +1,12 @@
 [
   {
-    "name": "fn_calculate_bmi",
-    "description": "Calculate Body Mass Index (BMI) given weight in kilograms and height in meters.",
+    "name": "fn_multiply_numbers",
+    "description": "Multiply two numbers together and return their product.",
     "parameters": {
-      "weight_kg": {
+      "a": {
         "type": "number"
       },
-      "height_m": {
+      "b": {
         "type": "number"
       }
     },
@@ -15,35 +15,11 @@
     }
   },
   {
-    "name": "fn_convert_temperature",
-    "description": "Convert temperature between Celsius, Fahrenheit, and Kelvin.",
+    "name": "fn_is_even",
+    "description": "Check if an integer is even, returns True if even, False if odd.",
     "parameters": {
-      "value": {
-        "type": "number"
-      },
-      "from_unit": {
-        "type": "string"
-      },
-      "to_unit": {
-        "type": "string"
-      }
-    },
-    "returns": {
-      "type": "number"
-    }
-  },
-  {
-    "name": "fn_send_email",
-    "description": "Send an email to a specified recipient with subject and body.",
-    "parameters": {
-      "recipient": {
-        "type": "string"
-      },
-      "subject": {
-        "type": "string"
-      },
-      "body": {
-        "type": "string"
+      "n": {
+        "type": "integer"
       }
     },
     "returns": {
@@ -51,30 +27,63 @@
     }
   },
   {
-    "name": "fn_count_words",
-    "description": "Count the number of words in a given text string.",
+    "name": "fn_calculate_compound_interest",
+    "description": "Calculate compound interest: principal * (1 + rate)^years.",
     "parameters": {
-      "text": {
+      "principal": {
+        "type": "number"
+      },
+      "rate": {
+        "type": "number"
+      },
+      "years": {
+        "type": "integer"
+      }
+    },
+    "returns": {
+      "type": "number"
+    }
+  },
+  {
+    "name": "fn_execute_sql_query",
+    "description": "Execute a SQL query on a specified database.",
+    "parameters": {
+      "query": {
+        "type": "string"
+      },
+      "database": {
         "type": "string"
       }
     },
     "returns": {
-      "type": "integer"
+      "type": "string"
     }
   },
   {
-    "name": "fn_generate_random_number",
-    "description": "Generate a random integer within a specified inclusive range.",
+    "name": "fn_read_file",
+    "description": "Read a file from the given path with specified encoding.",
     "parameters": {
-      "min": {
-        "type": "integer"
+      "path": {
+        "type": "string"
       },
-      "max": {
-        "type": "integer"
+      "encoding": {
+        "type": "string"
       }
     },
     "returns": {
-      "type": "integer"
+      "type": "string"
+    }
+  },
+  {
+    "name": "fn_format_template",
+    "description": "Format a template string containing placeholders.",
+    "parameters": {
+      "template": {
+        "type": "string"
+      }
+    },
+    "returns": {
+      "type": "string"
     }
   }
 ]
