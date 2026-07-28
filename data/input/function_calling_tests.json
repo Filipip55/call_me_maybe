@@ -1,26 +1,35 @@
 [
   {
-    "prompt": "Calculate the BMI for a person weighing 70 kg with a height of 1.75 meters"
+    "prompt": "What is the sum of 2 and 3?"
   },
   {
-    "prompt": "What is the BMI of someone who weighs 85 kg and is 1.80 meters tall?"
+    "prompt": "What is the sum of 265 and 345?"
   },
   {
-    "prompt": "Convert 100 degrees Celsius to Fahrenheit"
+    "prompt": "Greet shrek"
   },
   {
-    "prompt": "Convert 98.6 Fahrenheit to Celsius"
+    "prompt": "Greet john"
   },
   {
-    "prompt": "Send an email to alice@example.com with subject 'Project Update' and body 'The task is completed.'"
+    "prompt": "Reverse the string 'hello'"
   },
   {
-    "prompt": "Count how many words are in the text 'The quick brown fox jumps over the lazy dog.'"
+    "prompt": "Reverse the string 'world'"
   },
   {
-    "prompt": "Generate a random integer between 1 and 100"
+    "prompt": "What is the square root of 16?"
   },
   {
-    "prompt": "Give me a random integer between 50 and 500"
+    "prompt": "Calculate the square root of 144"
+  },
+  {
+    "prompt": "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS"
+  },
+  {
+    "prompt": "Replace all vowels in 'Programming is fun' with asterisks"
+  },
+  {
+    "prompt": "Substitute the word 'cat' with 'dog' in 'The cat sat on the mat with another cat'"
   }
 ]
