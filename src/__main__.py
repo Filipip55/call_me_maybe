@@ -2,10 +2,9 @@ import argparse
 import json
 import os
 from typing import List, Dict, Any
-from llm_sdk import Small_LLM_Model  # type: ignore
+from llm_sdk import Small_LLM_Model
 from .schema import load_functions_definition, load_prompts, FunctionCallingResult, FunctionDefinition
-from .constrained_decoder import Vocabulary
-from .generator import generate_function_call
+from src.generator import generate_function_call, decode_vocabulary
 
 
 def normalize_parameters(fn_name: str, params: Dict[str, Any], functions: List[FunctionDefinition]) -> Dict[str, Any]:
@@ -41,7 +40,7 @@ def normalize_parameters(fn_name: str, params: Dict[str, Any], functions: List[F
 
 
 def main() -> None:
-    """Punto di ingresso principale, analizza argomenti ed esegue l'LLM."""
+    """Punto di ingresso principale: analizza argomenti, carica i dati ed esegue l'LLM."""
     parser = argparse.ArgumentParser(description="Function Calling via Constrained Decoding")
     parser.add_argument("--functions_definition", type=str, default="data/input/functions_definition.json")
     parser.add_argument("--input", type=str, default="data/input/function_calling_tests.json")
@@ -67,7 +66,7 @@ def main() -> None:
 
     print("Initializing model and vocabulary...")
     llm = Small_LLM_Model()
-    vocab = Vocabulary(llm)
+    vocab = decode_vocabulary(llm)
 
     results = []
     print(f"Processing {len(prompts)} prompts...")
