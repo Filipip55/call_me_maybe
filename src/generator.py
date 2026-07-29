@@ -19,7 +19,7 @@ def decode_vocabulary(llm: Any) -> Dict[int, str]:
 
 
 def build_selection_prompt(user_prompt: str, functions: List[FunctionDefinition]) -> str:
-    """Costruisce un prompt per la selezione del nome della funzione."""
+    """Prompt per la selezione del nome della funzione."""
     fn_list = "\n".join(f"- {fn.name}: {fn.description}" for fn in functions)
     return (
         f"<|im_start|>system\n"
@@ -33,7 +33,7 @@ def build_selection_prompt(user_prompt: str, functions: List[FunctionDefinition]
 
 
 def build_extraction_prompt(user_prompt: str, fn: FunctionDefinition) -> str:
-    """Costruisce un prompt per l'estrazione dei parametri di una singola funzione."""
+    """Prompt per l'estrazione dei parametri di una singola funzione."""
     params_desc = ", ".join(f"{name} ({pdef.type})" for name, pdef in fn.parameters.items())
     return (
         f"<|im_start|>system\n"
@@ -216,10 +216,10 @@ def generate_function_call(
     functions: List[FunctionDefinition],
     vocab_tokens: Dict[int, str],
 ) -> str:
-    """Orchestratore a due fasi: seleziona la funzione, poi ne estrae i parametri."""
+    """Due fasi: seleziona il nome della funzione, poi ne estrae i parametri."""
     fn_map = {fn.name: fn for fn in functions}
 
-    # --- Fase 1: Selezione della funzione ---
+    # Selezione della funzione
     selection_prompt = build_selection_prompt(user_prompt, functions)
     name_alternatives = build_name_template(functions)
 
