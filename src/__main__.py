@@ -2,9 +2,9 @@ import argparse
 import json
 import os
 from typing import List, Dict, Any
-from llm_sdk import Small_LLM_Model
+from llm_sdk import Small_LLM_Model  # type: ignore
 from .schema import load_functions_definition, load_prompts, FunctionCallingResult, FunctionDefinition
-from src.generator import generate_function_call, decode_vocabulary
+from .generator import generate_function_call, decode_vocabulary
 
 
 def normalize_parameters(fn_name: str, params: Dict[str, Any], functions: List[FunctionDefinition]) -> Dict[str, Any]:
