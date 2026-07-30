@@ -175,9 +175,9 @@ def generate_constrained_text(
     max_tokens: int = 100,
 ) -> str:
     """
-    Genera testo provando il primo token valido ordinato per logit.
-    Se viene respinto dallo shema, si prova il secondo token più probabile.
-    Il ciclo continua fino a quando non si trova un token valido.
+    Genera testo con constrained decoding: i logit dei token che violano
+    lo schema JSON vengono settati a -infinito, poi si campiona dalla
+    distribuzione risultante (softmax sui token validi rimanenti).
     """
     generated_text = ""
 
@@ -185,32 +185,35 @@ def generate_constrained_text(
         current_input = llm.encode(prompt + generated_text).tolist()[0]
         logits = llm.get_logits_from_input_ids(current_input)
 
-        # Ordina i logit dal più probabile al meno probabile
-        sorted_indices = np.argsort(logits)[::-1]
+        # Inizializza tutti i logit a -infinito (maschera di default)
+        constrained_logits = np.full_like(logits, -np.inf)
 
-        best_token_str = None
-        is_finished_after_token = False
+        # Mappa token_id -> (is_finished) per i token validi
+        valid_finished = {}
 
-        for token_id in sorted_indices:
-            token_id = int(token_id)
-            # Scarta sequenze utf non valide
-            if token_id not in vocab_tokens:
-                continue
-
-            token_str = vocab_tokens[token_id]
+        for token_id, token_str in vocab_tokens.items():
             candidate_text = generated_text + token_str
-
             is_valid, is_finished = matches_any_template(candidate_text, templates)
             if is_valid:
-                best_token_str = token_str
-                is_finished_after_token = is_finished
-                break
+                # Mantieni il logit originale per i token validi
+                constrained_logits[token_id] = logits[token_id]
+                valid_finished[token_id] = is_finished
 
-        if best_token_str is None:
+        # Se nessun token è valido, interrompi la generazione
+        if not valid_finished:
             break
 
-        generated_text += best_token_str
-        if is_finished_after_token:
+        # Applica softmax ai logit vincolati per ottenere le probabilità
+        # (i -inf diventano 0 dopo softmax)
+        max_logit = np.max(constrained_logits)
+        exp_logits = np.exp(constrained_logits - max_logit)
+        probs = exp_logits / np.sum(exp_logits)
+
+        # Campiona un token dalla distribuzione risultante
+        sampled_token_id = int(np.random.choice(len(probs), p=probs))
+
+        generated_text += vocab_tokens[sampled_token_id]
+        if valid_finished[sampled_token_id]:
             break
 
     return generated_text
