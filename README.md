@@ -28,9 +28,11 @@ uv run python -m src --functions_definition data/input/functions_definition.json
 ```
 
 ## Resources
-- **Hugging Face Transformers Documentation:** Used to understand model loading and logit generation.
-- **Pydantic Documentation:** Used to define and validate input JSON structures.
-- **AI Usage:** An AI coding assistant (Gemini) was utilized to rapidly prototype the initial complex logic, and subsequently refactor the codebase to achieve extreme simplicity by leveraging NumPy's optimized C backend for sorting, effectively removing over 300 lines of unnecessary logic.
+- Hugging Face Transformers Documentation: Used to understand model loading and logit generation.
+- Pydantic Documentation: Used to define and validate input JSON structures.
+- Youtube: Watched lots of videos about automatons and prefix trees
+- My peers: Thank you Mathias for rounting me towards abandoning the previous implementation, lifesaver
+- AI Usage: AI was used to prototype the initial complex logic with NFAs and Trie, and subsequently to delete it.
 
 ## Algorithm explanation
 The core algorithm relies on a highly optimized, stateless **Sorted Logit Scan** combined with linear pattern matching:

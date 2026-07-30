@@ -87,9 +87,9 @@ def main() -> None:
             )
             results.append(res.model_dump())
         except Exception as e:
+            # Fallback in caso di errore (non fa errori)
             print(f"Error parsing generated JSON: {e}")
             print(f"Generated text was: {json_str}")
-            # Fallback in caso di errore (non fa errori)
             results.append({
                 "prompt": test.prompt,
                 "name": "error",

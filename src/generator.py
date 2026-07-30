@@ -90,18 +90,18 @@ def matches_template(text: str, template: List[Tuple[str, str]]) -> Tuple[bool, 
             if text[offset] != '"':
                 return False, False
             offset += 1
-            escaped = False
+            special_c = False
             in_string = True
 
             while offset < len(text) and in_string:
                 c = text[offset]
-                if escaped:
+                if special_c:
                     if c not in '"\\/bfnrt':
                         return False, False
-                    escaped = False
+                    special_c = False
                     offset += 1
                 elif c == '\\':
-                    escaped = True
+                    special_c = True
                     offset += 1
                 elif c == '"':
                     in_string = False
@@ -128,7 +128,8 @@ def matches_template(text: str, template: List[Tuple[str, str]]) -> Tuple[bool, 
             if offset == start_offset:
                 return False, False
 
-            # Verifica validità strutturale prima di passare al prossimo segmento
+            # Verifica che un n non sia solo un - 
+            # e che non termini con un . (es  "age": 21.)
             if offset < len(text):
                 num_str = text[start_offset:offset]
                 if num_str == '-' or num_str.endswith('.'):
@@ -173,7 +174,11 @@ def generate_constrained_text(
     templates: List[List[Tuple[str, str]]],
     max_tokens: int = 100,
 ) -> str:
-    """Genera testo campionando il primo token valido ordinato per logit."""
+    """ 
+    Genera testo provando il primo token valido ordinato per logit.
+    Se viene respinto dallo shema, si prova il secondo token più probabile.
+    Il ciclo continua fino a quando non si trova un token valido.
+    """
     generated_text = ""
 
     for _ in range(max_tokens):
@@ -188,6 +193,7 @@ def generate_constrained_text(
 
         for token_id in sorted_indices:
             token_id = int(token_id)
+            # Scarta sequenze utf non valide
             if token_id not in vocab_tokens:
                 continue
 
@@ -229,7 +235,7 @@ def generate_function_call(
     selected_name = selected_name.strip()
     selected_fn = fn_map[selected_name]
 
-    # --- Fase 2: Estrazione dei parametri ---
+    # Estrazione dei parametri
     extraction_prompt = build_extraction_prompt(user_prompt, selected_fn)
     params_template = build_params_template(selected_fn)
 
