@@ -128,7 +128,7 @@ def matches_template(text: str, template: List[Tuple[str, str]]) -> Tuple[bool, 
             if offset == start_offset:
                 return False, False
 
-            # Verifica che un n non sia solo un - 
+            # Verifica che un n non sia solo un -
             # e che non termini con un . (es  "age": 21.)
             if offset < len(text):
                 num_str = text[start_offset:offset]
@@ -174,7 +174,7 @@ def generate_constrained_text(
     templates: List[List[Tuple[str, str]]],
     max_tokens: int = 100,
 ) -> str:
-    """ 
+    """
     Genera testo provando il primo token valido ordinato per logit.
     Se viene respinto dallo shema, si prova il secondo token più probabile.
     Il ciclo continua fino a quando non si trova un token valido.
