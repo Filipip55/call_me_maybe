@@ -5,7 +5,8 @@ from .schema import FunctionDefinition
 
 
 def decode_vocabulary(llm: Any) -> Dict[int, str]:
-    """Pre-decodifica tutti i token in stringhe Python, ignorando utf-8 invalidi."""
+    """Pre-decodifica tutti i token in stringhe Python, ignorando
+    utf-8 invalidi."""
     vocab_path = llm.get_path_to_vocab_file()
     with open(vocab_path, 'r', encoding='utf-8') as f:
         vocab = json.load(f)
@@ -18,7 +19,9 @@ def decode_vocabulary(llm: Any) -> Dict[int, str]:
     return tokens
 
 
-def build_selection_prompt(user_prompt: str, functions: List[FunctionDefinition]) -> str:
+def build_selection_prompt(
+    user_prompt: str, functions: List[FunctionDefinition]
+) -> str:
     """Prompt per la selezione del nome della funzione."""
     fn_list = "\n".join(f"- {fn.name}: {fn.description}" for fn in functions)
     return (
@@ -34,7 +37,9 @@ def build_selection_prompt(user_prompt: str, functions: List[FunctionDefinition]
 
 def build_extraction_prompt(user_prompt: str, fn: FunctionDefinition) -> str:
     """Prompt per l'estrazione dei parametri di una singola funzione."""
-    params_desc = ", ".join(f"{name} ({pdef.type})" for name, pdef in fn.parameters.items())
+    params_desc = ", ".join(
+        f"{name} ({pdef.type})" for name, pdef in fn.parameters.items()
+    )
     return (
         f"<|im_start|>system\n"
         f"Extract the parameters for {fn.name} from the user message.\n"
@@ -47,8 +52,11 @@ def build_extraction_prompt(user_prompt: str, fn: FunctionDefinition) -> str:
     )
 
 
-def build_name_template(functions: List[FunctionDefinition]) -> List[List[Tuple[str, str]]]:
-    """Costruisce i template per i nomi delle funzioni (uno per ogni alternativa)."""
+def build_name_template(
+    functions: List[FunctionDefinition]
+) -> List[List[Tuple[str, str]]]:
+    """Costruisce i template per i nomi delle funzioni
+    (uno per ogni alternativa)."""
     return [[("literal", fn.name)] for fn in functions]
 
 
@@ -67,7 +75,9 @@ def build_params_template(fn: FunctionDefinition) -> List[Tuple[str, str]]:
     return segments
 
 
-def matches_template(text: str, template: List[Tuple[str, str]]) -> Tuple[bool, bool]:
+def matches_template(
+    text: str, template: List[Tuple[str, str]]
+) -> Tuple[bool, bool]:
     """
     Controlla se `text` è un prefisso valido per il `template`.
     Restituisce (is_valid_prefix, is_finished).
@@ -154,8 +164,11 @@ def matches_template(text: str, template: List[Tuple[str, str]]) -> Tuple[bool, 
     return offset == len(text), offset == len(text)
 
 
-def matches_any_template(text: str, templates: List[List[Tuple[str, str]]]) -> Tuple[bool, bool]:
-    """Applica matches_template a più alternative. Valido se almeno uno lo è."""
+def matches_any_template(
+    text: str, templates: List[List[Tuple[str, str]]]
+) -> Tuple[bool, bool]:
+    """Applica matches_template a più alternative.
+    Valido se almeno uno lo è."""
     any_valid = False
     any_finished = False
     for tmpl in templates:
@@ -193,7 +206,9 @@ def generate_constrained_text(
 
         for token_id, token_str in vocab_tokens.items():
             candidate_text = generated_text + token_str
-            is_valid, is_finished = matches_any_template(candidate_text, templates)
+            is_valid, is_finished = matches_any_template(
+                candidate_text, templates
+            )
             if is_valid:
                 # Mantieni il logit originale per i token validi
                 constrained_logits[token_id] = logits[token_id]
@@ -225,7 +240,8 @@ def generate_function_call(
     functions: List[FunctionDefinition],
     vocab_tokens: Dict[int, str],
 ) -> str:
-    """Due fasi: seleziona il nome della funzione, poi ne estrae i parametri."""
+    """Due fasi: seleziona il nome della funzione,
+    poi ne estrae i parametri."""
     fn_map = {fn.name: fn for fn in functions}
 
     # Selezione della funzione
@@ -243,7 +259,11 @@ def generate_function_call(
     params_template = build_params_template(selected_fn)
 
     params_json = generate_constrained_text(
-        llm, extraction_prompt, vocab_tokens, [params_template], max_tokens=100
+        llm,
+        extraction_prompt,
+        vocab_tokens,
+        [params_template],
+        max_tokens=100
     )
 
     return json.dumps({

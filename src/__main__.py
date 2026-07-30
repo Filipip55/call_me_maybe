@@ -3,11 +3,20 @@ import json
 import os
 from typing import List, Dict, Any
 from llm_sdk import Small_LLM_Model  # type: ignore
-from .schema import load_functions_definition, load_prompts, FunctionCallingResult, FunctionDefinition
+from .schema import (
+    load_functions_definition,
+    load_prompts,
+    FunctionCallingResult,
+    FunctionDefinition,
+)
 from .generator import generate_function_call, decode_vocabulary
 
 
-def normalize_parameters(fn_name: str, params: Dict[str, Any], functions: List[FunctionDefinition]) -> Dict[str, Any]:
+def normalize_parameters(
+    fn_name: str,
+    params: Dict[str, Any],
+    functions: List[FunctionDefinition]
+) -> Dict[str, Any]:
     """Normalizza i tipi dei parametri in base allo schema della funzione."""
     fn_map = {fn.name: fn for fn in functions}
     if fn_name not in fn_map:
@@ -40,11 +49,26 @@ def normalize_parameters(fn_name: str, params: Dict[str, Any], functions: List[F
 
 
 def main() -> None:
-    """Punto di ingresso principale: analizza argomenti, carica i dati ed esegue l'LLM."""
-    parser = argparse.ArgumentParser(description="Function Calling via Constrained Decoding")
-    parser.add_argument("--functions_definition", type=str, default="data/input/functions_definition.json")
-    parser.add_argument("--input", type=str, default="data/input/function_calling_tests.json")
-    parser.add_argument("--output", type=str, default="data/output/function_calling_results.json")
+    """Punto di ingresso principale: analizza argomenti, carica i dati ed
+    esegue l'LLM."""
+    parser = argparse.ArgumentParser(
+        description="Function Calling via Constrained Decoding"
+    )
+    parser.add_argument(
+        "--functions_definition",
+        type=str,
+        default="data/input/functions_definition.json"
+    )
+    parser.add_argument(
+        "--input",
+        type=str,
+        default="data/input/function_calling_tests.json"
+    )
+    parser.add_argument(
+        "--output",
+        type=str,
+        default="data/output/function_calling_results.json"
+    )
     args = parser.parse_args()
 
     # Crea la cartella di output (se non esiste)
@@ -71,7 +95,10 @@ def main() -> None:
     results = []
     print(f"Processing {len(prompts)} prompts...")
     for i, test in enumerate(prompts):
-        print(f"[{i+1}/{len(prompts)}] Generating function call for the following prompt: {test.prompt}")
+        print(
+            f"[{i+1}/{len(prompts)}] Generating function call for "
+            f"the following prompt: {test.prompt}"
+        )
         json_str = generate_function_call(llm, test.prompt, functions, vocab)
 
         try:

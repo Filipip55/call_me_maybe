@@ -41,7 +41,10 @@ def load_functions_definition(path: str) -> List[FunctionDefinition]:
         with open(path, 'r', encoding='utf-8') as f:
             data = json.load(f)
         if not isinstance(data, list):
-            print(f"Error: Function definitions file '{path}' must contain a JSON list.")
+            print(
+                f"Error: Function definitions file '{path}' must "
+                f"contain a JSON list."
+            )
             return []
         functions = []
         for item in data:
