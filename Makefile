@@ -21,17 +21,16 @@ clean:
 	rm -rf __pycache__ .mypy_cache src/__pycache__ src/llm_sdk/__pycache__ data/output/*
 
 lint:
-	uv run flake8 .
-	uv run mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
-
+	uv run flake8 src --exclude=src/llm_sdk
+	uv run mypy src --exclude 'src/llm_sdk' --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 moulinette_private:
-	uv run python -m moulinette prepare_exercises --output="data" --set="private"
+	uv run --project moulinette python -m moulinette prepare_exercises --output="data" --set="private"
 
 moulinette_public:
-	uv run python -m moulinette prepare_exercises --output="data" --set="public"
+	uv run --project moulinette python -m moulinette prepare_exercises --output="data" --set="public"
 
 moulinette_grade_private:
-	uv run python -m moulinette grade_student_answers data/output/function_calling_results.json --set="private"
+	uv run --project moulinette python -m moulinette grade_student_answers data/output/function_calling_results.json --set="private"
 
 moulinette_grade_public:
-	uv run python -m moulinette grade_student_answers data/output/function_calling_results.json --set="public"
+	uv run --project moulinette python -m moulinette grade_student_answers data/output/function_calling_results.json --set="public"
