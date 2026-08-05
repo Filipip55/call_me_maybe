@@ -189,7 +189,7 @@ def generate_constrained_text(
 ) -> str:
     """
     Genera testo con constrained decoding: i logit dei token che violano
-    lo schema JSON vengono settati a -infinito, poi si campiona dalla
+    lo schema JSON vengono settati a -inf, poi si campiona dalla
     distribuzione risultante (softmax sui token validi rimanenti).
     """
     generated_text = ""
@@ -198,7 +198,7 @@ def generate_constrained_text(
         current_input = llm.encode(prompt + generated_text).tolist()[0]
         logits = llm.get_logits_from_input_ids(current_input)
 
-        # Inizializza tutti i logit a -infinito (maschera di default)
+        # Inizializza tutti i logit a -inf
         constrained_logits = np.full_like(logits, -np.inf)
 
         # Mappa token_id -> (is_finished) per i token validi
@@ -214,7 +214,7 @@ def generate_constrained_text(
                 constrained_logits[token_id] = logits[token_id]
                 valid_finished[token_id] = is_finished
 
-        # Se nessun token è valido, interrompi la generazione
+        # Se nessun token è valido interrompe la generazione
         if not valid_finished:
             break
 
